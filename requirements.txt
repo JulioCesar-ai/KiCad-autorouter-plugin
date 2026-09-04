@@ -1,0 +1,19 @@
+# requirements.txt — Dependencias del Asistente de Enrutamiento PCB (Tesis)
+#
+# El proyecto usa únicamente la biblioteca estándar de Python 3.x:
+#   - heapq    (cola de prioridad para A*)
+#   - math     (cálculos de distancias y rotaciones)
+#   - re       (expresiones regulares para parsear KiCad)
+#   - uuid     (generación de UUIDs para segmentos KiCad 10)
+#   - random   (operadores del Algoritmo Genético)
+#   - threading (GUI no bloqueante en el plugin)
+#   - dataclasses, typing, datetime, os, sys, argparse, time, shutil
+#
+# NO se requieren dependencias externas para el enrutamiento CLI.
+#
+# Para el plugin KiCad, wx (wxPython) es provisto por KiCad mismo.
+# Si desea probar la GUI fuera de KiCad (experimental):
+#   pip install wxPython
+#
+# wxPython solo es necesario para desarrollo/prueba fuera de KiCad.
+# En producción (dentro de KiCad), wx ya está incluido en KiCad 10.

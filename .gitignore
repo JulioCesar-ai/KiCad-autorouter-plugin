@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# KiCad backups and lock files
+*.kicad_pcb-bak
+*.kicad_prl
+*.kicad_pro-bak
+fp-info-cache
+*-backups/
+
+# Generated routing outputs (test artifacts, not source)
+# Covers both naming schemes: <base>_enrutado.kicad_pcb (default, overwritten)
+# and <base>_enrutado_YYYYMMDD_HHMMSS.kicad_pcb (--con-timestamp)
+casos_prueba/*_enrutado*.kicad_pcb
