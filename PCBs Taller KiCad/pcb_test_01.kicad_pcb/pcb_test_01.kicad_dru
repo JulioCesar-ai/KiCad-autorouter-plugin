@@ -1,0 +1,9 @@
+(version 1)
+
+(rule "clearance_vcc"
+   (constraint clearance (min 0.35mm))
+   (condition "A.NetName == 'VCC'"))
+
+(rule "ancho_minimo_vcc"
+   (constraint track_width (min 0.5mm))
+   (condition "A.NetName == 'VCC'"))
