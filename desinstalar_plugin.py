@@ -5,7 +5,8 @@ Elimina el plugin del directorio de plugins de KiCad 10.
 
 Uso:
     python desinstalar_plugin.py
-    python desinstalar_plugin.py --forzar   (sin confirmación)
+    python desinstalar_plugin.py --forzar          (sin confirmación)
+    python desinstalar_plugin.py --ruta RUTA       (forzar el directorio a usar)
 """
 
 import os
@@ -14,25 +15,29 @@ import shutil
 import argparse
 from pathlib import Path
 
+# Misma detección que instalar_plugin.py — no se duplica aquí, se importa,
+# para que ambos scripts coincidan siempre en qué directorio es "el" de
+# KiCad en esta máquina.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from instalar_plugin import detectar_ruta_plugins_kicad
+
 
 NOMBRE_PLUGIN = "asistente_pcb_tesis"
 
-RUTA_PLUGINS_KICAD = Path(
-    r"C:\Users\fuent\OneDrive\Documentos\KiCad\10.0\scripting\plugins"
-)
 
-
-def desinstalar(sin_confirmacion: bool = False) -> bool:
+def desinstalar(ruta_plugins: Path, sin_confirmacion: bool = False) -> bool:
     """
     Elimina el plugin instalado del directorio de KiCad.
 
     Args:
+        ruta_plugins: directorio de plugins de KiCad (de
+            `detectar_ruta_plugins_kicad`, o forzado con `--ruta`).
         sin_confirmacion: Si True, no pide confirmación al usuario
 
     Returns:
         True si la desinstalación fue exitosa o el plugin no estaba instalado
     """
-    dir_plugin = RUTA_PLUGINS_KICAD / NOMBRE_PLUGIN
+    dir_plugin = ruta_plugins / NOMBRE_PLUGIN
 
     print(f"\n{'='*60}")
     print(f"  Desinstalador — Asistente Enrutamiento PCB (Tesis)")
@@ -87,9 +92,19 @@ def main():
         '--forzar', '-f', action='store_true',
         help='Desinstalar sin pedir confirmación'
     )
+    parser.add_argument(
+        '--ruta', default=None,
+        help='Directorio de plugins de KiCad a usar, si la autodetección no '
+             'aplica a esta instalación'
+    )
     args = parser.parse_args()
 
-    exito = desinstalar(sin_confirmacion=args.forzar)
+    ruta_plugins, _ = detectar_ruta_plugins_kicad(args.ruta)
+    origen = "indicada con --ruta" if args.ruta else "autodetectada"
+    print(f"[Detección] Directorio de plugins de KiCad ({origen}):")
+    print(f"  {ruta_plugins}")
+
+    exito = desinstalar(ruta_plugins, sin_confirmacion=args.forzar)
     sys.exit(0 if exito else 1)
 
 

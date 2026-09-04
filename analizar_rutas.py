@@ -1,9 +1,22 @@
+"""
+analizar_rutas.py — Compara segmentos por red entre una placa original y su
+version enrutada.
+
+Uso:
+    python analizar_rutas.py <placa_original.kicad_pcb> <placa_enrutada.kicad_pcb>
+"""
 import re
 import sys
+import argparse
 from collections import defaultdict
 
-orig_path = r'C:\Users\fuent\Downloads\Pcbpruebas\Proyectos_KiCAD\Regulador_tension_5V\Regulador_tension_5V.kicad_pcb'
-rout_path = r'C:\Users\fuent\Downloads\Pcbpruebas\Proyectos_KiCAD\Regulador_tension_5V\Regulador_tension_5V_enrutado_20260510_095022.kicad_pcb'
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('placa_original', help='Archivo .kicad_pcb original (sin enrutar)')
+parser.add_argument('placa_enrutada', help='Archivo .kicad_pcb enrutado')
+args = parser.parse_args()
+
+orig_path = args.placa_original
+rout_path = args.placa_enrutada
 
 orig = open(orig_path, encoding='utf-8').read()
 rout = open(rout_path, encoding='utf-8').read()

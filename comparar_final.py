@@ -1,16 +1,20 @@
 """
 comparar_final.py
 Comparacion detallada entre enrutamiento original y del asistente.
+
+Uso:
+    python comparar_final.py <placa_original.kicad_pcb> <placa_enrutada.kicad_pcb>
 """
-import sys, math, re
+import sys, math, re, argparse
+from pathlib import Path
 
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
 
-sys.path.insert(0, r'C:\Users\fuent\asistente_pcb_tesis')
-from lector_pcb import leer_pcb, obtener_conexiones_a_enrutar
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lector_pcb import leer_pcb, obtener_conexiones_a_enrutar, _agrupar_pads_por_conectividad
 
 def extraer_segmentos_fcu(ruta):
     with open(ruta, encoding='utf-8') as f:
@@ -41,8 +45,13 @@ def angulos_limpios(segs):
             malos += 1
     return len(segs) - malos, malos
 
-ruta_orig = r'C:\Users\fuent\Downloads\pruebakicad\Proyectos_KiCAD\Regulador_tension_9V_5V\Regulador_tension_9V_5V.kicad_pcb'
-ruta_enr  = r'C:\Users\fuent\Downloads\pruebakicad\Proyectos_KiCAD\Regulador_tension_9V_5V\Regulador_tension_9V_5V_enrutado_20260515_084238.kicad_pcb'
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('placa_original', help='Archivo .kicad_pcb original (sin enrutar)')
+parser.add_argument('placa_enrutada', help='Archivo .kicad_pcb enrutado por el asistente')
+args = parser.parse_args()
+
+ruta_orig = args.placa_original
+ruta_enr = args.placa_enrutada
 
 segs_o = extraer_segmentos_fcu(ruta_orig)
 segs_e = extraer_segmentos_fcu(ruta_enr)
@@ -83,7 +92,10 @@ for net in sorted(set(list(redes_o.keys()) + list(redes_e.keys()))):
 
 print()
 print("--- Analisis de Redundancia ---")
-# Ver si el asistente enruta dos conexiones empezando del mismo pad
+# Ver si el MST del original asigna dos conexiones desde el mismo pad de
+# origen — no implica por si solo que el asistente vaya a duplicar trayecto
+# (puede resolver la segunda como tap sobre el cobre de la primera, ver
+# decidir_objetivo() en enrutador_astar.py), solo lo señala como candidato.
 datos = leer_pcb(ruta_orig)
 conexiones = obtener_conexiones_a_enrutar(datos)
 
@@ -93,29 +105,68 @@ for c in conexiones:
     key = f"{o.referencia}.{o.numero_pad}"
     pads_origen.setdefault(key, []).append(f"{d.referencia}.{d.numero_pad}")
 
+hay_redundancia = False
 for pad, destinos in pads_origen.items():
     if len(destinos) > 1:
+        hay_redundancia = True
         print(f"  Pad {pad} es origen de {len(destinos)} conexiones: {', '.join(destinos)}")
-        print(f"    -> Esto crea 2 rutas separadas desde el mismo pad (redundante)")
-        print(f"    -> El original encadena los pads: A->B->C en lugar de A->B y A->C")
+        print(f"    -> El MST le asigna {len(destinos)} aristas desde el mismo pad "
+              f"(candidato a ruta redundante, no confirmado)")
+
+if not hay_redundancia:
+    print("  Ningun pad del MST original es origen de mas de una conexion.")
 
 print()
 print("=" * 60)
 print("  DIAGNOSTICO")
 print("=" * 60)
 print()
-print("Por que el asistente usa mas segmentos:")
-print("  - El asistente enruta cada par de pads por separado")
-print("  - Una red con 3 pads genera 2 rutas desde el mismo origen")
-print("  - El original encadena: pad1->pad2->pad3 (una sola ruta continua)")
+
+if hay_redundancia:
+    print("Posible causa de mas segmentos en el asistente:")
+    print("  - El MST del original asigna varias conexiones desde el mismo pad")
+    print("  - Si el asistente NO reconoce la segunda como tap sobre el cobre")
+    print("    de la primera, la enruta pad-a-pad por separado en vez de")
+    print("    encadenar A->B->C como suele hacerlo el enrutado manual")
+    print()
+
+# Conectividad real, calculada sobre el archivo ENRUTADO (no una cifra fija):
+# cuenta como completa cada red con >=2 pads cuyo cobre F.Cu los una a todos
+# (mismo criterio que verificar_conectividad en escritor_pcb.py).
+print("Conectividad (calculada sobre la placa enrutada):")
+datos_enr = leer_pcb(ruta_enr)
+total_redes = 0
+completas = 0
+incompletas = []
+for nombre, red in datos_enr.redes.items():
+    if len(red.pads) < 2:
+        continue
+    total_redes += 1
+    segs_red = [s for s in datos_enr.segmentos_existentes if s.nombre_red == nombre]
+    grupos = _agrupar_pads_por_conectividad(red.pads, segs_red)
+    if len(grupos) == 1:
+        completas += 1
+    else:
+        incompletas.append(nombre)
+
+if total_redes:
+    print(f"  - {completas}/{total_redes} redes completas "
+          f"({100*completas/total_redes:.0f}%)")
+else:
+    print("  - No hay redes con 2+ pads que evaluar")
+if incompletas:
+    print(f"  - Redes incompletas: {', '.join(sorted(incompletas))}")
+
+zonas = datos_enr.redes_con_zona_fcu
+if zonas:
+    print()
+    print(f"Redes cubiertas por zona de cobre (no se enrutan con pistas): "
+          f"{', '.join(sorted(zonas))}")
+    print("  - Sus pads no muestran ratsnest resuelto hasta ejecutar")
+    print("    'Edit -> Fill All Zones' (tecla B) en KiCad")
+
 print()
-print("Conectividad:")
-print("  - Asistente: 6/6 conexiones completas (100%)")
-print("  - DRC: 0 errores")
-print("  - Todos los pads de senal conectados con dist=0.0mm exacto")
-print()
-print("Por que se ven partes sin enrutar en KiCad:")
-print("  - Los pads GND muestran ratsnest hasta que se ejecuta")
-print("    'Edit -> Fill All Zones' (tecla B) en KiCad")
-print("  - La zona de cobre GND cubre todos esos pads pero")
-print("    necesita ser rellenada manualmente")
+print("NOTA: este script NO corre el DRC nativo de KiCad ni verifica clearance —")
+print("      solo compara segmentos F.Cu y conectividad geometrica. Para un")
+print("      veredicto de fabricabilidad, use el DRC de KiCad sobre el archivo")
+print("      enrutado.")

@@ -10,7 +10,8 @@ if hasattr(sys.stdout, 'reconfigure'):
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
 
-sys.path.insert(0, r'C:\Users\fuent\asistente_pcb_tesis')
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lector_pcb import leer_pcb
 
 def extraer_segmentos_fcu(ruta):
