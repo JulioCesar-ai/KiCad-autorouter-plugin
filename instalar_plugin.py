@@ -37,7 +37,7 @@ from typing import List, Optional, Tuple
 # Configuración
 # ─────────────────────────────────────────────────────────────────────────────
 
-NOMBRE_PLUGIN = "asistente_pcb_tesis"
+NOMBRE_PLUGIN = "asistente_pcb_KiCad"
 
 # Módulos del proyecto que deben copiarse dentro del plugin
 MODULOS_A_COPIAR = [
@@ -260,7 +260,7 @@ def instalar(ruta_plugins: Path, existia: bool,
         print("  1. Abra KiCad 10")
         print("  2. Abra un diseño PCB en Pcbnew")
         print("  3. Vaya a: Tools → External Plugins")
-        print("  4. Haga clic en: Asistente Enrutamiento PCB (Tesis)")
+        print("  4. Haga clic en: Asistente Enrutamiento PCB (KiCad)")
         print()
         print("NOTA: Si KiCad ya estaba abierto, reinícielo para cargar el plugin.")
 
@@ -307,7 +307,7 @@ Ejemplos:
     args = parser.parse_args()
 
     print(f"\n{'='*60}")
-    print(f"  Instalador — Asistente Enrutamiento PCB (Tesis)")
+    print(f"  Instalador — Asistente Enrutamiento PCB (KiCad)")
     print(f"  Plataforma: {platform.system()} {platform.version()[:20]}")
     print(f"{'='*60}\n")
 
