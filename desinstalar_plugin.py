@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from instalar_plugin import detectar_ruta_plugins_kicad
 
 
-NOMBRE_PLUGIN = "asistente_pcb_tesis"
+NOMBRE_PLUGIN = "asistente_pcb_KiCad"
 
 
 def desinstalar(ruta_plugins: Path, sin_confirmacion: bool = False) -> bool:
@@ -40,7 +40,7 @@ def desinstalar(ruta_plugins: Path, sin_confirmacion: bool = False) -> bool:
     dir_plugin = ruta_plugins / NOMBRE_PLUGIN
 
     print(f"\n{'='*60}")
-    print(f"  Desinstalador — Asistente Enrutamiento PCB (Tesis)")
+    print(f"  Desinstalador — Asistente Enrutamiento PCB (KiCad)")
     print(f"{'='*60}\n")
 
     if not dir_plugin.exists():

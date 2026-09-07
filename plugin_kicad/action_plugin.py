@@ -21,7 +21,7 @@ if PLUGIN_DIR not in sys.path:
 class AsistentePCBPlugin(pcbnew.ActionPlugin):
 
     def defaults(self):
-        self.name = "Asistente Enrutamiento PCB (Tesis)"
+        self.name = "Asistente Enrutamiento PCB (KiCad)"
         self.category = "Enrutamiento"
         self.description = (
             "Asistente de IA para enrutamiento de PCBs de una sola capa. "
