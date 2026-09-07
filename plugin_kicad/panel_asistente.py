@@ -346,7 +346,7 @@ class PanelAsistente(wx.Dialog):
         # Ancho de pista
         grid.Add(wx.StaticText(parent, label="Ancho de pista (mm):"),
                  0, wx.ALIGN_CENTER_VERTICAL)
-        self.campo_ancho = wx.SpinCtrlDouble(parent, value="0.30",
+        self.campo_ancho = wx.SpinCtrlDouble(parent, value="0.50",
                                               min=0.1, max=5.0, inc=0.05)
         self.campo_ancho.SetDigits(2)
         self.campo_ancho.SetToolTip("Ancho de las pistas enrutadas (mínimo recomendado: 0.15mm)")
@@ -356,7 +356,7 @@ class PanelAsistente(wx.Dialog):
         # Clearance
         grid.Add(wx.StaticText(parent, label="Clearance mínimo (mm):"),
                  0, wx.ALIGN_CENTER_VERTICAL)
-        self.campo_clearance = wx.SpinCtrlDouble(parent, value="0.20",
+        self.campo_clearance = wx.SpinCtrlDouble(parent, value="0.35",
                                                   min=0.05, max=2.0, inc=0.05)
         self.campo_clearance.SetDigits(2)
         self.campo_clearance.SetToolTip("Separación mínima entre pistas y pads")
@@ -400,7 +400,7 @@ class PanelAsistente(wx.Dialog):
         # Generaciones
         grid.Add(wx.StaticText(parent, label="Generaciones:"),
                  0, wx.ALIGN_CENTER_VERTICAL)
-        self.campo_generaciones = wx.SpinCtrl(parent, value="40", min=5, max=2000)
+        self.campo_generaciones = wx.SpinCtrl(parent, value="20", min=5, max=2000)
         self.campo_generaciones.SetToolTip(
             "Número de generaciones del AG.\n"
             "Mayor valor = mejor optimización pero más tiempo."
@@ -411,7 +411,7 @@ class PanelAsistente(wx.Dialog):
         # Tamaño de población
         grid.Add(wx.StaticText(parent, label="Tamaño de población:"),
                  0, wx.ALIGN_CENTER_VERTICAL)
-        self.campo_poblacion = wx.SpinCtrl(parent, value="24", min=6, max=500)
+        self.campo_poblacion = wx.SpinCtrl(parent, value="16", min=6, max=500)
         self.campo_poblacion.SetToolTip(
             "Número de individuos (órdenes de enrutamiento) por generación.\n"
             "Mayor valor = más diversidad pero más lento."
