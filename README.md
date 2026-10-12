@@ -1,270 +1,309 @@
-# Asistente de Inteligencia Artificial para la Optimización del Enrutamiento de PCBs de Una Sola Capa en KiCad
+🇪🇸 [Leer en español](README.es.md)
 
-**Proyecto de Tesis** | KiCad 10
+# KiCad Single-Layer Autorouter
 
----
+**Single-layer autorouter for KiCad 10: A\* pathfinding with a genetic algorithm for net ordering. Pure Python, no external dependencies.**
 
-## Descripción
+It runs as a KiCad 10 Action Plugin or from the command line.
 
-Este proyecto implementa un asistente de IA que automatiza el enrutamiento de pistas en PCBs (Printed Circuit Boards) de una sola capa (F.Cu) usando dos algoritmos:
-
-1. **Algoritmo Genético (AG)** — Optimiza el *orden* en que se enrutan las conexiones para minimizar la longitud total y reducir cruces entre pistas.
-2. **Algoritmo A\*** — Encuentra el camino más corto libre de obstáculos para cada conexión individual sobre una cuadrícula configurable (0.25mm por defecto).
-
-Compatible exclusivamente con **KiCad 10** (formato de archivo versión 20260206). Las redes cubiertas por una zona de cobre (típicamente GND) se dan por conectadas a través del plano y no se enrutan con pistas individuales.
+![Dual power supply (LM317/LM337) before and after routing](docs/img/fuente-dual-antes-despues.png)
 
 ---
 
-## Estructura del Proyecto
+## What it does
 
-```
-asistente_pcb_tesis/
-├── lector_pcb.py           — Parser de archivos .kicad_pcb (KiCad 10)
-├── enrutador_astar.py      — Algoritmo A* en Python puro, cuadrícula configurable
-├── optimizador_genetico.py — Algoritmo Genético, cruce OX, mutación swap
-├── analisis_zona.py        — Detecta si las pistas fragmentan el plano de cobre de
-│                              la zona de masa (p. ej. GND), en Python puro y sin
-│                              depender de pcbnew — funciona igual en la CLI headless
-│                              que en el plugin
-├── escritor_pcb.py         — Orquestador principal + escritura de salida
-├── instalar_plugin.py      — Instala el plugin en KiCad 10
-├── desinstalar_plugin.py   — Desinstala el plugin de KiCad 10
-├── requirements.txt        — Dependencias (solo stdlib de Python)
-├── README.md               — Este archivo
-├── plugin_kicad/
-│   ├── __init__.py             — Inicialización del paquete del plugin
-│   ├── action_plugin.py        — ActionPlugin de KiCad (punto de entrada)
-│   ├── panel_asistente.py      — GUI wxPython con controles de enrutamiento
-│   └── icono_asistente_64.png  — Ícono del plugin en el menú de KiCad
-└── casos_prueba/
-    └── *.kicad_pcb          — PCBs de prueba (KiCad 10), sin enrutar y enrutadas
-```
+It routes the tracks of a single-layer (F.Cu) PCB using two algorithms:
 
-Ver también [Instrumentos de verificación y análisis](#instrumentos-de-verificación-y-análisis) — scripts adicionales en la raíz que no forman parte del asistente entregado.
+1. **Genetic Algorithm (GA)**: optimizes the *order* in which connections are routed, to minimize total length and reduce track crossings.
+2. **A\***: finds the shortest obstacle-free path for each individual connection on a configurable grid (0.25 mm by default).
+
+Nets covered by a copper zone (typically GND) are treated as connected through the pour and are not routed with individual tracks.
 
 ---
 
-## Requisitos
+## Limitations
 
-| Componente | Versión |
+Please read this before trying it on your board:
+
+- **Single copper layer only (F.Cu).** Two-layer routing is not supported.
+- **KiCad 10 only** (file format version 20260206). Not tested on earlier versions.
+- **Tested on Windows only.** The installer has paths for macOS and Linux, but I haven't been able to test them. Reports are very welcome.
+- **The interface and console messages are in Spanish.** Parameter names in the CLI are also in Spanish (`--ancho` = width, `--paso` = grid step, etc.). The tables below translate them.
+- **GND is not routed with tracks.** It is expected to be handled by a copper pour.
+- **Results vary between runs.** The genetic algorithm is stochastic. The plugin can run several full attempts and keep the best one (best-of-N), but on dense boards it may still not find a fully clean result.
+- **Validated on boards up to 28 components.** Larger boards may work, but I haven't validated them.
+- **Component placement matters.** Some placements create bottlenecks that split the GND pour into isolated pieces. The plugin detects this and reports it, but it can't fix it. Rotating or moving the offending component usually does.
+- **Always run KiCad's DRC after routing.**
+
+If it fails on your board, please [open an issue](https://github.com/JulioCesar-ai/KiCad-autorouter-plugin/issues) and attach the `.kicad_pcb` file. That's exactly the feedback I'm looking for.
+
+---
+
+## Try it in 5 minutes
+
+The repository includes example boards in `PCBs Taller KiCad/`:
+
+- **`FuenteAlimentacionDual/`**: dual adjustable power supply (LM317/LM337), 28 components, already placed. Open it in KiCad and route it directly.
+- **`pcb_test_01.kicad_pcb/`**: hands-on exercise from the validation workshop. The schematic is complete but the board is intentionally empty: update the PCB from the schematic, place the components, then run the autorouter. Includes custom design rules for the VCC net.
+
+---
+
+## Requirements
+
+| Component | Version |
 |-----------|---------|
-| KiCad     | 10.0    |
-| Python (uso como plugin) | El intérprete embebido de KiCad 10 (3.11 en la versión utilizada para el desarrollo) |
-| Python (uso por línea de comandos) | Cualquier Python 3 reciente |
-| Sistema operativo | Windows, macOS o Linux — los que soporta KiCad 10 |
-| Dependencias | Solo biblioteca estándar de Python. La GUI usa wxPython, provisto por KiCad; solo hace falta instalarlo aparte para probar la GUI fuera de KiCad |
+| KiCad | 10.0 |
+| Python (as a plugin) | KiCad 10's embedded interpreter (3.11 in the version used for development) |
+| Python (command line and installer) | Any recent Python 3 |
+| Operating system | Tested on Windows. macOS and Linux untested |
+| Dependencies | Python standard library only. The GUI uses wxPython, which ships with KiCad; you only need to install it separately to test the GUI outside KiCad |
 
 ---
 
-## Uso Rápido
+## Installation
 
-### Desde la línea de comandos
+### 1. Get the code
 
 ```bash
-# Enrutar un PCB con parámetros por defecto (orden MPS + A*; el AG se activa
-# con --orden ag — la GUI del plugin, en cambio, lo trae activado por defecto)
+git clone https://github.com/JulioCesar-ai/KiCad-autorouter-plugin.git
+cd KiCad-autorouter-plugin
+```
+
+Or use the green **Code → Download ZIP** button on GitHub and extract it.
+
+### 2. Install the plugin
+
+```bash
+python instalar_plugin.py
+```
+
+The installer detects KiCad 10's plugin folder automatically for your operating system. Other options:
+
+```bash
+# Show what would be installed, without copying anything
+python instalar_plugin.py --ver
+
+# Use a specific plugin folder instead of the detected one
+python instalar_plugin.py --ruta "/path/to/scripting/plugins"
+
+# Uninstall
+python desinstalar_plugin.py
+
+# Uninstall without confirmation
+python desinstalar_plugin.py --forzar
+```
+
+Auto-detection tries the usual `scripting/plugins` locations for KiCad 10 on the detected OS, in order, and uses the first one that exists (or the first one with content, if several exist). If none exists, it creates the first one in the list and tells you which path it chose.
+
+<details>
+<summary>Manual installation (if the installer doesn't work)</summary>
+
+1. Find KiCad 10's plugin folder. On Windows it is usually `Documents\KiCad\10.0\scripting\plugins` (or the same path under `OneDrive`).
+2. Create a folder named `asistente_pcb_KiCad` inside it.
+3. Copy into that folder:
+   - all the files inside `plugin_kicad/` (the files, not the folder itself)
+   - `lector_pcb.py`, `enrutador_astar.py`, `optimizador_genetico.py`, `escritor_pcb.py` and `analisis_zona.py`
+4. Restart KiCad.
+
+</details>
+
+### 3. Use it
+
+1. Open KiCad 10 and open a board in the PCB Editor.
+2. Go to **Tools → External Plugins → Asistente Enrutamiento PCB (KiCad)**, or click its icon in the toolbar.
+
+<img src="docs/img/panel.png" alt="Plugin panel" width="420">
+
+The plugin has two ways of applying the result:
+
+- **File mode**: writes `<name>_enrutado.kicad_pcb` to disk without touching the open board. This is the default when the selected file is not the one open in KiCad.
+- **Memory mode**: applies the tracks directly to the board open in the PCB Editor (without writing to disk), so you can review the result and save it with Ctrl+S. It always requires the selected file to be exactly the one open in KiCad. Given that, it turns on automatically if the file is a derived one (`*_enrutado.kicad_pcb`), or you can check **"Aplicar sobre el tablero abierto"** (apply to the open board) to work directly on the original. It includes a **"Deshacer"** (undo) button that removes only the tracks the plugin added, without touching tracks you routed by hand.
+
+<img src="docs/img/drc.png" alt="KiCad DRC with 0 violations after routing" width="520">
+
+![3D view of the routed board](docs/img/vista-3d.png)
+
+---
+
+## Command line
+
+```bash
+# Route a board with default parameters (MPS order + A*; the GA is enabled
+# with --orden ag. The plugin GUI, on the other hand, enables it by default)
 python escritor_pcb.py casos_prueba/mi_pcb.kicad_pcb
 
-# Con parámetros personalizados
-python escritor_pcb.py mi_pcb.kicad_pcb --ancho 0.25 --clearance 0.15
+# Custom track width and clearance
+python escritor_pcb.py my_board.kicad_pcb --ancho 0.25 --clearance 0.15
 
-# Con más generaciones del AG para mejor optimización
-python escritor_pcb.py mi_pcb.kicad_pcb --generaciones 200 --poblacion 80
+# More GA generations for better optimization
+python escritor_pcb.py my_board.kicad_pcb --orden ag --generaciones 200 --poblacion 80
 
-# Orden por MPS (Maximum Planar Subset) en vez del AG
-python escritor_pcb.py mi_pcb.kicad_pcb --orden mps
+# Best-of-N: run the full routing 3 times and apply only the best result
+python escritor_pcb.py my_board.kicad_pcb --intentos 3
 
-# Best-of-N: corre el enrutado completo 3 veces y aplica solo el mejor
-python escritor_pcb.py mi_pcb.kicad_pcb --intentos 3
-
-# Ver todas las opciones
+# All options
 python escritor_pcb.py --help
 ```
 
-Por defecto, el archivo de salida siempre es `<nombre>_enrutado.kicad_pcb` y se sobrescribe en cada corrida, para no acumular archivos mientras se iteran parámetros. `--con-timestamp` restaura el nombre con fecha/hora (`mi_pcb_enrutado_20260510_143022.kicad_pcb`); `--salida <ruta>` fija una ruta explícita.
+By default, the output file is always `<name>_enrutado.kicad_pcb` and it is overwritten on each run, so files don't pile up while you iterate on parameters. `--con-timestamp` adds the date and time to the name instead (`mi_pcb_enrutado_20260510_143022.kicad_pcb`); `--salida <path>` sets an explicit output path.
 
-### Como plugin en KiCad 10
+### Parameters
 
-```bash
-# 1. Instalar el plugin
-python instalar_plugin.py
-
-# 2. Abrir KiCad 10
-# 3. Abrir un PCB en Pcbnew
-# 4. Tools → External Plugins → Asistente Enrutamiento PCB (Tesis)
-```
-
-El plugin admite dos modos de aplicar el resultado:
-
-- **Modo archivo** — escribe `<nombre>_enrutado.kicad_pcb` en disco, sin tocar el tablero abierto. Es el modo por defecto cuando el archivo seleccionado no es el que está abierto en KiCad.
-- **Modo memoria** — aplica los segmentos directamente sobre el tablero abierto en Pcbnew (sin escribir a disco), para poder revisar el resultado y guardarlo con Ctrl+S. Requiere siempre que el archivo seleccionado sea exactamente el que está abierto en KiCad; dado eso, se activa automáticamente si el archivo es un derivado (`*_enrutado.kicad_pcb`), o marcando la casilla "Aplicar sobre el tablero abierto" para trabajar directamente sobre el original. Incluye un botón "Deshacer última aplicación" que retira solo las pistas que agregó el asistente, sin tocar las trazadas a mano.
-
----
-
-## Parámetros Configurables
-
-| Parámetro | CLI | Defecto | Descripción |
+| Parameter | CLI | Default | Description |
 |-----------|-----|---------|-------------|
-| Ancho de pista | `--ancho` | 0.3 mm | Ancho de las pistas enrutadas |
-| Ancho por red | `--ancho-red` | — | Ancho para una red específica, ej. `--ancho-red "GND=1.0"` (repetible) |
-| Clearance nominal | `--clearance` | 0.2 mm | Separación mínima entre cobre |
-| Clearance mínimo fabricable | `--clearance-minimo` | 0.127 mm | Piso al que se reintenta en clearance reducido; nunca se baja de aquí |
-| Paso cuadrícula | `--paso` | 0.25 mm | Resolución del A* |
-| Orden de enrutamiento | `--orden` | `mps` | `distancia` \| `mps` \| `ag` — quién decide el orden de las conexiones. La GUI del plugin usa AG por defecto (checkbox activado); la CLI usa MPS salvo que se pida `--orden ag` |
-| Aptitud del AG | `--fitness` | `surrogate` | `surrogate` (A* grueso, fiel) \| `aproximada` (oclusión progresiva, rápida) — solo con `--orden ag` |
-| Paso del surrogate | `--paso-surrogate` | 0.5 mm | Resolución de cuadrícula del fitness `surrogate` |
-| Generaciones AG | `--generaciones` | 40 | Iteraciones del AG |
-| Población AG | `--poblacion` | 24 | Individuos por generación |
-| Intentos (best-of-N) | `--intentos` / `--repeticiones` | 1 | Corre el enrutado completo N veces con semillas distintas y aplica solo el mejor |
-| Semilla | `--semilla` | Aleatoria (no fija) | Fija la semilla del AG para reproducir una corrida |
-| Sin AG | `--sin-ag` | — | (Compatibilidad) Equivale a `--orden mps` |
-| Sin DRC | `--sin-drc` | — | Deshabilitar verificación DRC básica |
-| Salida | `--salida` | — | Ruta de archivo de salida explícita |
-| Con timestamp | `--con-timestamp` | — | Agregar fecha/hora al nombre de salida en vez de sobrescribir |
+| Track width | `--ancho` | 0.3 mm | Width of routed tracks |
+| Per-net width | `--ancho-red` | — | Width for a specific net, e.g. `--ancho-red "GND=1.0"` (repeatable) |
+| Nominal clearance | `--clearance` | 0.2 mm | Minimum copper-to-copper spacing |
+| Minimum manufacturable clearance | `--clearance-minimo` | 0.127 mm | Floor used when retrying with reduced clearance; never goes below this |
+| Grid step | `--paso` | 0.25 mm | A\* grid resolution |
+| Routing order | `--orden` | `mps` | `distancia` (distance) \| `mps` \| `ag` (genetic algorithm): what decides the connection order. The plugin GUI uses the GA by default; the CLI uses MPS unless `--orden ag` is given |
+| GA fitness | `--fitness` | `surrogate` | `surrogate` (coarse A\*, accurate) \| `aproximada` (progressive occlusion, fast). Only with `--orden ag` |
+| Surrogate grid step | `--paso-surrogate` | 0.5 mm | Grid resolution for the `surrogate` fitness |
+| GA generations | `--generaciones` | 40 | GA iterations |
+| GA population | `--poblacion` | 24 | Individuals per generation |
+| Attempts (best-of-N) | `--intentos` / `--repeticiones` | 1 | Runs the full routing N times with different seeds and applies only the best |
+| Seed | `--semilla` | Random | Fixes the GA seed to reproduce a run |
+| No GA | `--sin-ag` | — | (Compatibility) Same as `--orden mps` |
+| No DRC | `--sin-drc` | — | Disable the built-in basic DRC check |
+| Output | `--salida` | — | Explicit output file path |
+| With timestamp | `--con-timestamp` | — | Add date/time to the output name instead of overwriting |
 
 ---
 
-## Arquitectura de Algoritmos
+## How it works
 
-### Algoritmo A* (`enrutador_astar.py`)
-
-```
-Cuadrícula:  paso configurable (0.25mm por defecto)
-Movimiento:  8 direcciones (H, V, 45°)
-Heurística:  Chebyshev h(n) = max(|Δx|,|Δy|) + (√2-1)·min(|Δx|,|Δy|)
-Obstáculos:  Pads + pistas previas + clearance
-Giros:       Penalización configurable (COSTO_GIRO = 2.0)
-```
-
-Incluye rip-up and reroute acotado: una conexión que falla o que enruta con un desvío patológico (≥3.0× la distancia directa) puede disparar el rehecho completo de su red, dentro de un presupuesto de intentos limitado.
-
-### Algoritmo Genético (`optimizador_genetico.py`)
+### A\* (`enrutador_astar.py`)
 
 ```
-Individuo:   Permutación de índices de conexiones
-Fitness:     Secuencial y dependiente del orden — surrogate (A* grueso real)
-             o aproximada (oclusión progresiva), nunca una suma que ignore
-             el orden en que se enruta
-Selección:   Torneo (k=3)
-Cruce:       Order Crossover (OX)
-Mutación:    Swap de dos posiciones (prob=0.15)
-Elitismo:    El mejor individuo pasa directamente
-Semillado:   La población inicial incluye el orden MPS y el de distancia
+Grid:        configurable step (0.25 mm by default)
+Movement:    8 directions (H, V, 45°)
+Heuristic:   octile h(n) = max(|Δx|,|Δy|) + (√2-1)·min(|Δx|,|Δy|)
+Obstacles:   pads + previously routed tracks + clearance
+Turns:       configurable penalty (COSTO_GIRO = 2.0)
 ```
 
-### Análisis de fragmentación del plano de cobre (`analisis_zona.py`)
+Includes bounded rip-up and reroute: a connection that fails, or that routes with a pathological detour (≥3.0× the direct distance), can trigger a full reroute of its net, within a limited attempt budget.
 
-Las redes con zona (GND, típicamente) no se enrutan con pistas — se asumen conectadas a través del vertido. Pero el plano solo conecta si sigue siendo una sola pieza: las pistas de las demás redes, con su clearance, pueden partirlo en regiones aisladas. Este módulo rasteriza la placa y cuenta componentes conexas del cobre que se rellenaría, para detectar esa fragmentación sin depender de `pcbnew` — corre igual en la CLI headless que dentro del plugin, y se usa como criterio de selección en el best-of-N.
-
-### Flujo completo (`escritor_pcb.py`)
+### Genetic Algorithm (`optimizador_genetico.py`)
 
 ```
-Archivo PCB
+Individual:  permutation of connection indices
+Fitness:     sequential and order-dependent: surrogate (real coarse A*)
+             or approximate (progressive occlusion), never a sum that
+             ignores the order in which connections are routed
+Selection:   tournament (k=3)
+Crossover:   Order Crossover (OX)
+Mutation:    swap of two positions (prob = 0.15)
+Elitism:     the best individual passes directly
+Seeding:     the initial population includes the MPS and distance orders
+```
+
+### Copper pour fragmentation analysis (`analisis_zona.py`)
+
+Nets with a zone (typically GND) are not routed with tracks; they are assumed to be connected through the pour. But the pour only connects them if it stays in one piece: the other nets' tracks, with their clearance, can split it into isolated regions. This module rasterizes the board and counts connected components of the copper that would be filled, to detect that fragmentation without depending on `pcbnew`. It runs the same way in the headless CLI and inside the plugin, and it is used as a selection criterion in best-of-N.
+
+### Full flow (`escritor_pcb.py`)
+
+```
+PCB file
     │
     ├─→ lector_pcb.leer_pcb()
-    │       └─→ DatosPCB (pads, redes, zonas de cobre, límites)
+    │       └─→ DatosPCB (pads, nets, copper zones, bounds)
     │
-    ├─→ obtener_conexiones_a_enrutar() [MST por red, excluye redes con zona]
+    ├─→ obtener_conexiones_a_enrutar() [MST per net, excludes nets with a zone]
     │
-    ├─→ optimizar_orden_enrutamiento() [AG, si --orden ag]
-    │       └─→ Conexiones ordenadas óptimamente
+    ├─→ optimizar_orden_enrutamiento() [GA, if --orden ag]
+    │       └─→ optimally ordered connections
     │
-    ├─→ enrutar_todos() [A* por conexión, con rip-up and reroute]
-    │       └─→ Lista de segmentos {x1,y1,x2,y2,red,ancho}
+    ├─→ enrutar_todos() [A* per connection, with rip-up and reroute]
+    │       └─→ list of segments {x1,y1,x2,y2,net,width}
     │
-    ├─→ analizar_fragmentacion_zona() [por intento, si hay zonas]
+    ├─→ analizar_fragmentacion_zona() [per attempt, if there are zones]
     │
-    ├─→ drc_basico() [Verificación DRC]
+    ├─→ drc_basico() [basic DRC check]
     │
-    └─→ escribir_pcb_enrutado() → <nombre>_enrutado.kicad_pcb
+    └─→ escribir_pcb_enrutado() → <name>_enrutado.kicad_pcb
 ```
 
-Con `--intentos N > 1`, este flujo corre completo N veces con semillas distintas y solo se aplica/escribe el mejor resultado, según un criterio estrictamente lexicográfico (fallidas → redes incompletas → fragmentos del plano → clearance reducido → rutas patológicas → longitud).
+With `--intentos N > 1`, this whole flow runs N times with different seeds and only the best result is applied or written, using a strictly lexicographic criterion: failed connections → incomplete nets → pour fragments → reduced clearance → pathological routes → length. Length is deliberately last, so a run with open nets can never beat a complete one just by being shorter.
 
 ---
 
-## Compatibilidad con KiCad 10
+## KiCad 10 file compatibility
 
-Reglas críticas aplicadas en la escritura del archivo:
+Rules applied when writing the file:
 
-- ✅ Redes por **NOMBRE**: `(net "GND")` — sin ID numérico
-- ✅ Capa entre comillas: `(layer "F.Cu")`
-- ✅ UUID único por segmento: `(uuid "xxxxxxxx-...")`
-- ✅ Sin punto y coma como comentarios dentro del archivo
-- ✅ Formato S-expresión idéntico al que genera KiCad 10
-- ✅ El cobre existente (enrutado manual del usuario) nunca se borra, solo se preserva como obstáculo y se completa alrededor
+- ✅ Nets by **NAME**: `(net "GND")`, without a numeric ID
+- ✅ Quoted layer: `(layer "F.Cu")`
+- ✅ Unique UUID per segment: `(uuid "xxxxxxxx-...")`
+- ✅ No semicolon comments inside the file
+- ✅ S-expression format identical to what KiCad 10 generates
+- ✅ Existing copper (your manual routing) is never deleted. It is kept as an obstacle and the routing is completed around it
 
 ---
 
-## Prueba del módulo individual
+## Project structure
+
+```
+KiCad-autorouter-plugin/
+├── lector_pcb.py           — .kicad_pcb parser (KiCad 10)
+├── enrutador_astar.py      — A* in pure Python, configurable grid
+├── optimizador_genetico.py — Genetic algorithm, OX crossover, swap mutation
+├── analisis_zona.py        — Detects whether tracks split the ground pour (e.g. GND),
+│                              pure Python, no pcbnew dependency
+├── escritor_pcb.py         — Main orchestrator + output writing
+├── instalar_plugin.py      — Installs the plugin into KiCad 10
+├── desinstalar_plugin.py   — Uninstalls the plugin
+├── requirements.txt        — Dependencies (Python stdlib only)
+├── plugin_kicad/
+│   ├── __init__.py             — Plugin package init
+│   ├── action_plugin.py        — KiCad ActionPlugin (entry point)
+│   ├── panel_asistente.py      — wxPython GUI
+│   └── icono_asistente_64.png  — Plugin icon
+├── casos_prueba/           — Unrouted test boards (KiCad 10)
+└── PCBs Taller KiCad/      — Example boards from the validation workshop
+```
+
+### Testing individual modules
 
 ```bash
-# Probar solo el lector
-python lector_pcb.py casos_prueba/mi_pcb.kicad_pcb
+python lector_pcb.py casos_prueba/mi_pcb.kicad_pcb     # parser only
+python optimizador_genetico.py                         # GA only
+python enrutador_astar.py                              # A* only
+python escritor_pcb.py casos_prueba/mi_pcb.kicad_pcb   # full flow
 
-# Probar solo el AG
-python optimizador_genetico.py
-
-# Probar solo el A*
-python enrutador_astar.py
-
-# Probar solo el análisis de fragmentación de zona
+# Pour fragmentation analysis (run escritor_pcb.py first to generate the routed file)
 python analisis_zona.py casos_prueba/mi_pcb_enrutado.kicad_pcb
-
-# Flujo completo
-python escritor_pcb.py casos_prueba/mi_pcb.kicad_pcb
 ```
 
----
+### Verification and analysis scripts
 
-## Instrumentos de verificación y análisis
+Extra scripts in the project root, used during development and validation. They are not part of the plugin (the installer doesn't copy them).
 
-Scripts adicionales en la raíz del proyecto, usados durante el desarrollo y la validación para caracterizar el comportamiento del asistente. No forman parte del asistente entregado (ni de la GUI ni de `MODULOS_A_COPIAR` en el instalador) — son herramientas de diagnóstico de línea de comandos.
+**Checking results**
 
-**Verificación del resultado**
+- `verificar_conectividad.py`: checks that each net's pads are joined by the resulting copper.
+- `verificar_pads.py`: checks that track endpoints land on the pads they should touch.
+- `verificar_enrutado.py`: compares the routed file against the original.
 
-- `verificar_conectividad.py` — comprueba que los pads de cada red queden unidos por el cobre resultante.
-- `verificar_pads.py` — comprueba que los extremos de las pistas coincidan con los pads que deberían tocar.
-- `verificar_enrutado.py` — compara el archivo enrutado contra el original.
+**Genetic algorithm analysis**
 
-**Análisis del Algoritmo Genético**
+- `validar_surrogate.py`: measures how faithful the fast fitness evaluator (`surrogate`) is compared to real routing.
+- `medir_sesgo_surrogate.py`: quantifies the surrogate's deviation from real routing, permutation by permutation.
+- `test_regresion_aptitud.py`: regression test for a bug found during development (a fitness that didn't depend on connection order).
 
-- `validar_surrogate.py` — evalúa la fidelidad del evaluador rápido de aptitud (`surrogate`) frente al enrutado real.
-- `medir_sesgo_surrogate.py` — cuantifica la desviación del surrogate respecto al enrutado real, permutación por permutación.
-- `test_regresion_aptitud.py` — previene la reaparición de un fallo detectado en desarrollo (una aptitud que no dependía del orden de las conexiones).
-
-**Inspección**
+**Inspection**
 
 - `analizar_angulos.py`, `analizar_rutas.py`, `ver_segmentos.py`, `comparar_final.py`.
 
 ---
 
-## Instalación y desinstalación del plugin
+## Author
 
-```bash
-# Instalar (detecta automáticamente el directorio de plugins de KiCad 10
-# según el sistema operativo — Windows, macOS o Linux)
-python instalar_plugin.py
+Julio César Fuentes.
 
-# Verificar qué se instalaría (sin copiar)
-python instalar_plugin.py --ver
+Technical reference: [KiCadRoutingTools](https://github.com/drandyhaas/KiCadRoutingTools).
 
-# Forzar un directorio de destino distinto al detectado automáticamente
-python instalar_plugin.py --ruta "/ruta/a/scripting/plugins"
+## License
 
-# Desinstalar
-python desinstalar_plugin.py
-
-# Desinstalar sin confirmación
-python desinstalar_plugin.py --forzar
-```
-
-La autodetección prueba, en orden, las ubicaciones habituales de `scripting/plugins` de KiCad 10 para el sistema operativo detectado, y usa la primera que exista (o la primera que tenga contenido, si hay varias ya creadas). Si ninguna existe, crea la primera de la lista e informa la ruta elegida. `--ruta` permite indicarla manualmente cuando la instalación no está en una ubicación estándar.
-
----
-
-## Autores
-
-- Proyecto de Tesis — Julio Fuentes
-- Basado en el análisis del formato KiCad 10 (version 2026)
-- Referencia técnica: [KiCadRoutingTools](https://github.com/drandyhaas/KiCadRoutingTools)
+GPL-3.0. See [LICENSE](LICENSE).
