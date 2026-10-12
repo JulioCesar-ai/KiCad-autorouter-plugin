@@ -14,3 +14,8 @@ fp-info-cache
 # Covers both naming schemes: <base>_enrutado.kicad_pcb (default, overwritten)
 # and <base>_enrutado_YYYYMMDD_HHMMSS.kicad_pcb (--con-timestamp)
 casos_prueba/*_enrutado*.kicad_pcb
+
+# KiCad lock and autosave files
+*.lck
+_autosave-*
+~*
