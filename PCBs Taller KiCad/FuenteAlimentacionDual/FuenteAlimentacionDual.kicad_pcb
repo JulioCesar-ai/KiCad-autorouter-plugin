@@ -191,7 +191,7 @@
 		(property ki_fp_filters "TO?220*")
 		(path "/5364dc75-f966-438f-8459-44a659a45ecf")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -457,7 +457,7 @@
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/022cd556-c8ca-430e-a917-d0577db69587")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -669,7 +669,7 @@
 		(property ki_fp_filters "CP_*")
 		(path "/8b19dfa3-00cd-40b0-8481-f8c40b7e8c49")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -2067,7 +2067,7 @@
 		(property ki_fp_filters "D*DO?41*")
 		(path "/c79d6a47-ab87-4515-bbb3-9ac5a168ba76")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -2249,7 +2249,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(roundrect_rratio 0.113636)
-			(net "VOUT+")
+			(net "VIN+")
 			(pinfunction "K_1")
 			(pintype "passive")
 			(uuid "5335dec4-411b-49ea-a0e2-d73e47e68ef1")
@@ -2260,7 +2260,7 @@
 			(drill 1.1)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(net "VIN+")
+			(net "VOUT+")
 			(pinfunction "A_2")
 			(pintype "passive")
 			(uuid "61f4b7ba-e91e-4783-af8e-e222429a7e32")
@@ -2369,7 +2369,7 @@
 		(property ki_fp_filters "D*DO?41*")
 		(path "/8c13cc47-bc67-4b50-8862-dda161613b76")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -2645,7 +2645,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/51a67e28-1b2f-4469-9645-5cf25f1bf917")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -2836,7 +2836,7 @@
 		(property ki_fp_filters "CP_*")
 		(path "/bd511e94-0f80-4166-a3d6-b9ddc6a3f9ce")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -4928,7 +4928,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/e65b5cda-8f34-4e0d-9eca-0edb879396cf")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -5229,7 +5229,7 @@
 		(property ki_fp_filters "C_*")
 		(path "/ef632c42-2ffc-4f44-8e72-433b012d0bdc")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -5455,7 +5455,7 @@
 		(property ki_fp_filters "D*DO?41*")
 		(path "/331bc4dd-744b-4065-b525-b180ae1411c5")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -5637,7 +5637,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(roundrect_rratio 0.113636)
-			(net "VIN-")
+			(net "VOUT-")
 			(pinfunction "K_1")
 			(pintype "passive")
 			(uuid "9d90d359-358c-456c-bbc2-825816006971")
@@ -5648,7 +5648,7 @@
 			(drill 1.1)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(net "VOUT-")
+			(net "VIN-")
 			(pinfunction "A_2")
 			(pintype "passive")
 			(uuid "53d2a5ed-aa5b-4ded-8029-2bbc33579e71")
@@ -5731,7 +5731,7 @@
 		(property ki_fp_filters "CP_*")
 		(path "/791bc884-13c8-4d90-8935-4e4985512901")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -7103,7 +7103,7 @@
 		(property ki_fp_filters "TO?220*")
 		(path "/0067e078-bcc6-4490-82d5-fe3b1a0b1f1c")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -7356,7 +7356,7 @@
 		(property ki_fp_filters "C_*")
 		(path "/64b79b7b-66a7-4896-91e2-b65d9320301f")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -7556,7 +7556,7 @@
 		(property ki_fp_filters "CP_*")
 		(path "/f45310e7-d1ec-4ee7-add1-6599c5002ae2")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -9648,7 +9648,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/bfdba0e5-919a-4453-9bca-b25284b0dd81")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -9865,7 +9865,7 @@
 		(property ki_fp_filters "D*DO?41*")
 		(path "/3a0c699a-1cc4-43d0-9e3e-af1055d99755")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -10141,7 +10141,7 @@
 		(property ki_fp_filters "Connector*:*_1x??_*")
 		(path "/2652eccd-c361-4b9e-add1-6fe9813b17ea")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -10639,7 +10639,7 @@
 		(property ki_fp_filters "Connector*:*_1x??_*")
 		(path "/d3a946e5-6962-449e-b1b7-97c4b391e530")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -11137,7 +11137,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/05b515b5-253f-4d4a-84ca-718c02bc4307")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -11354,7 +11354,7 @@
 		(property ki_fp_filters "D*DO?41*")
 		(path "/a468876a-a93c-49a5-9c08-4bb86d5680ca")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -11669,7 +11669,7 @@
 		(property ki_fp_filters "Potentiometer*")
 		(path "/61228fcf-362f-4078-83d2-d9848ed35661")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -11932,7 +11932,7 @@
 		(property ki_fp_filters "Potentiometer*")
 		(path "/b244831e-3bce-40e9-b9f5-5cd2c8cae9b4")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -12292,7 +12292,7 @@
 		(property ki_fp_filters "D*DO?41*")
 		(path "/04824085-28a0-4423-a204-66535d94de73")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")
@@ -12801,7 +12801,7 @@
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/be5a23e5-1025-4a14-a5c8-701d34ef6c82")
 		(sheetname "/")
-		(sheetfile "Fuente de alimentación dual ajustable ±1.25V a ±12V.kicad_sch")
+		(sheetfile "FuenteAlimentacionDual.kicad_sch")
 		(units
 			(unit
 				(name "A")

@@ -3982,7 +3982,8 @@
 	)
 	(symbol
 		(lib_id "Diode:1N4007")
-		(at 196.85 132.08 180)
+		(at 196.85 132.08 0)
+		(mirror x)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3990,7 +3991,6 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "331bc4dd-744b-4065-b525-b180ae1411c5")
 		(property "Reference" "D6"
 			(at 196.85 125.73 0)
@@ -5683,6 +5683,7 @@
 	(symbol
 		(lib_id "Diode:1N4007")
 		(at 195.58 58.42 0)
+		(mirror y)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5690,7 +5691,6 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "c79d6a47-ab87-4515-bbb3-9ac5a168ba76")
 		(property "Reference" "D5"
 			(at 195.58 52.07 0)
